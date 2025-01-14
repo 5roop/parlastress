@@ -6,15 +6,22 @@ from datasets import Audio, Dataset
 
 from pydub import AudioSegment
 
+pl.Config.set_tbl_cols(-1)
+pl.Config.set_fmt_str_lengths(None)
+pl.Config.set_tbl_width_chars(200)
 segment_path = Path("data/segments")
 segment_path.mkdir(exist_ok=True)
 # Reading PS_Mirna:
-wavbasepath = "data/input/PS_Mirna/"
+wavbasepath = "data/input/MP/split_wavs/"
 df = (
-    pl.read_ndjson("data/input/PS_Mirna/ParlaStress-HR.jsonl")
-    .with_columns((pl.lit(wavbasepath) + pl.col("audio_wav")).alias("audio_wav"))
-    # .filter(pl.col("split_speaker").eq("train"))
-    # .select(["audio_wav", "multisyllabic_words"])
+    pl.read_ndjson("data/input/MP/MP_combined_stress.jsonl")
+    .with_columns(
+        (
+            pl.lit(wavbasepath)
+            + pl.col("audio_wav").map_elements(lambda s: Path(s).name)
+        ).alias("audio_wav"),
+        pl.lit("test").alias("split_speaker"),
+    )
     .explode("multisyllabic_words")
     .unnest("multisyllabic_words")
     .with_columns(
@@ -56,7 +63,7 @@ df = (
 )
 from tqdm import tqdm
 
-df.write_ndjson("data.jsonl")
+df.write_ndjson("data_MP.jsonl")
 for recording in tqdm(df["audio"].unique().to_list()):
     subset = df.filter(pl.col("audio").eq(recording))
     audio = AudioSegment.from_wav(recording)
