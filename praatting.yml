@@ -1,0 +1,57 @@
+name: praatting
+channels:
+  - conda-forge
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=2_gnu
+  - bzip2=1.0.8=h4bc722e_7
+  - ca-certificates=2024.12.14=hbcca054_0
+  - colorama=0.4.6=pyhd8ed1ab_1
+  - ld_impl_linux-64=2.43=h712a8e2_2
+  - libblas=3.9.0=26_linux64_openblas
+  - libcblas=3.9.0=26_linux64_openblas
+  - libexpat=2.6.4=h5888daf_0
+  - libffi=3.4.2=h7f98852_5
+  - libgcc=14.2.0=h77fa898_1
+  - libgcc-ng=14.2.0=h69a702a_1
+  - libgfortran=14.2.0=h69a702a_1
+  - libgfortran5=14.2.0=hd5240d6_1
+  - libgomp=14.2.0=h77fa898_1
+  - liblapack=3.9.0=26_linux64_openblas
+  - liblzma=5.6.3=hb9d3cd8_1
+  - libmpdec=4.0.0=h4bc722e_0
+  - libopenblas=0.3.28=pthreads_h94d23a6_1
+  - libsqlite=3.47.2=hee588c1_0
+  - libstdcxx=14.2.0=hc0a3c3a_1
+  - libuuid=2.38.1=h0b41bf4_0
+  - libzlib=1.3.1=hb9d3cd8_2
+  - ncurses=6.5=h2d0b736_2
+  - numpy=2.2.1=py313hb30382a_0
+  - openssl=3.4.0=h7b32b05_1
+  - packaging=24.2=pyhd8ed1ab_2
+  - pip=24.3.1=pyh145f28c_2
+  - polars=1.17.1=py313hae41bca_1
+  - praatio=6.2.0=pyhd8ed1ab_1
+  - pydub=0.25.1=pyhd8ed1ab_1
+  - python=3.13.1=ha99a958_104_cp313
+  - python_abi=3.13=5_cp313
+  - readline=8.2=h8228510_1
+  - tk=8.6.13=noxft_h4845f30_101
+  - tqdm=4.67.1=pyhd8ed1ab_1
+  - typing-extensions=4.12.2=hd8ed1ab_1
+  - typing_extensions=4.12.2=pyha770c72_1
+  - tzdata=2024b=hc8b5060_0
+  - pip:
+      - annotated-types==0.7.0
+      - anyio==4.8.0
+      - click==8.1.8
+      - fastapi==0.115.6
+      - h11==0.14.0
+      - idna==3.10
+      - line-profiler==4.2.0
+      - pydantic==2.10.5
+      - pydantic-core==2.27.2
+      - sniffio==1.3.1
+      - starlette==0.41.3
+      - uvicorn==0.34.0
+prefix: /home/peterr/mambaforge/envs/praatting

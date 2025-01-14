@@ -1,6 +1,7 @@
 .snakemake
 model_prim*
 data
+data.*
 .vscode
 .lprof
 brisi*
