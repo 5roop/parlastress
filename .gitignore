@@ -1,3 +1,12 @@
+.snakemake
+model_prim*
+data
+.vscode
+.lprof
+
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
