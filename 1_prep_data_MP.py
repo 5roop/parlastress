@@ -22,15 +22,18 @@ df = (
         ).alias("audio_wav"),
         pl.lit("test").alias("split_speaker"),
     )
-    .explode("multisyllabic_words")
+    .explode(["multisyllabic_words"])
     .unnest("multisyllabic_words")
     .with_columns(
         pl.col("stress").list.len().alias("stress_list_length"),
     )
     .explode("stress")
-    .select("audio_wav time_s time_e stress split_speaker".split())
+    # .select("audio_wav time_s time_e stress split_speaker".split())
 )
 
+if not df.filter(pl.col("stress_list_length") > 1).shape[0] == 0:
+    print("There are words with more than one stress, dropping!")
+    df = df.filter(pl.col("stress_list_length") <= 1)
 with pl.Config(fmt_str_lengths=100, tbl_cols=10):
     print("Will drop these instances:")
     print(df.filter(pl.any_horizontal(pl.all().is_null())))
@@ -52,13 +55,14 @@ df = (
         pl.struct(["time_s", "time_e", "stress"]).map_elements(f).alias("label"),
         pl.col("audio_wav").alias("audio"),
     )
-    .select(["audio", "label", "time_s", "time_e", "split_speaker", "stress"])
+    # .select(["audio", "label", "time_s", "time_e", "split_speaker", "stress"])
     .with_columns(
         pl.struct(["audio", "time_s", "time_e"])
         .map_elements(
             lambda row: f"{segment_path / str(Path(row['audio']).with_suffix('').name)}_{row['time_s']:0.2f}_{row['time_e']:0.2f}.wav"
         )
-        .alias("segment_name")
+        .alias("segment_name"),
+        pl.lit("MP").alias("provenance"),
     )
 )
 from tqdm import tqdm

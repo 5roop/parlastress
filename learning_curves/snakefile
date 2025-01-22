@@ -1,0 +1,110 @@
+NUM_MODELS = 10
+model_serials = [i for i in range(NUM_MODELS)]
+INSTANCES = [i for i in range(100, 1100, 100)]
+STEPS = [1200, 600, 300]
+
+# def find_input_data_for_jsons(wildcards):
+#     if wildcards.what == "PS-HR":
+#         return "../data/input/PS_Mirna/ParlaStress-HR.jsonl"
+#     elif wildcards.what == "MP":
+#         return "../data/input/MP/MP_combined_stress.jsonl"
+#     elif wildcards.what == "SLO":
+#         return "../data/input/SLO/SLO_encoding_stress.jsonl"
+#     else:
+#         raise InputError()
+# rule gather_jsons_for_nikola:
+#     input: expand("words_{what}.jsonl", what = ["PS-HR", "SLO", "MP"])
+# rule generate_jsons_for_nikola:
+#     conda: "transformers"
+#     input:
+#         data=find_input_data_for_jsons,
+#         predictions = "models/model_1000_600_0/checkpoint-600_postprocessedpredictions.jsonl",
+#     output: "words_{what}.jsonl"
+#     script: "scripts/generate_jsons_for_nikola.py"
+
+
+rule gather_stats:
+#echo "gpu?"; read core; export CUDA_VISIBLE_DEVICES=$core;echo "batch?"; read batch; snakemake -j 10 --use-conda -k --rerun-incomplete --batch gather_stats="$batch" --rerun-incomplete
+#echo "gpu?"; read core; export CUDA_VISIBLE_DEVICES=$core;echo "batch?"; read batch; snakemake -j 10 --use-conda -k --rerun-incomplete --batch gather_stats="$batch" --rerun-incomplete
+# snakemake -j 10 --use-conda gather_stats --batch gather_stats=2/4
+# snakemake -j 2 --use-conda gather_stats --batch gather_models=1/5
+    input:
+        expand("models/model_{instances}_{steps}_{serial}/checkpoint-{steps}_stats.jsonl",
+        instances=INSTANCES,
+        serial=model_serials,
+        steps = STEPS,
+        ) + expand("models/model_{instances}_{steps}_{serial}/checkpoint-{steps}_stats.jsonl",
+        instances=[10442],
+        serial=[i for i in range(10)],
+        steps = [6540],)
+    output: "model_scores.png"
+    conda: "transformers"
+    script: "scripts/plot_learning_curves.py"
+
+rule calculate_stats:
+    input: "models/model_{instances}_{steps}_{serial}/checkpoint-{steps}_postprocessedpredictions.jsonl"
+    output: "models/model_{instances}_{steps}_{serial}/checkpoint-{steps}_stats.jsonl"
+    conda: "transformers"
+    params:
+        modes = ["raw", "pp"],
+        provenances = ["PS-HR", "MP", "SLO"]
+    script: "scripts/calculate_stats.py"
+
+rule postprocess_predictions:
+    input:
+        predictions = "models/model_{instances}_{steps}_{serial}/checkpoint-{steps}_predictions.jsonl",
+        datafiles=["../data_MP.jsonl", "../data_PS-HR.jsonl", "../data_SLO.jsonl"]
+    output: "models/model_{instances}_{steps}_{serial}/checkpoint-{steps}_postprocessedpredictions.jsonl"
+    conda: "transformers"
+    script: "scripts/postprocess_predictions.py"
+
+rule concatenate_inferences:
+    input: expand("models/model_{{instances}}_{{steps}}_{{serial}}/checkpoint-{{steps}}_predictions_{what}.jsonl", what="MP PS_HR SLO".split())
+    output: "models/model_{instances}_{steps}_{serial}/checkpoint-{steps}_predictions.jsonl"
+    conda:"transformers"
+    script:
+        "scripts/concatenate_inferences.py"
+
+rule run_inference_MP:
+    input:
+        checkpoint = "models/model_{instances}_{steps}_{serial}/checkpoint-{steps}/",
+        datafiles = ["../data_MP.jsonl", ]
+    output:  temp("models/model_{instances}_{steps}_{serial}/checkpoint-{steps}_predictions_MP.jsonl")
+    conda: "transformers"
+    script:
+        "scripts/run_inference.py"
+rule run_inference_PS_HR:
+    input:
+        checkpoint = "models/model_{instances}_{steps}_{serial}/checkpoint-{steps}/",
+        datafiles = ["../data_PS-HR.jsonl", ]
+    output:  temp("models/model_{instances}_{steps}_{serial}/checkpoint-{steps}_predictions_PS_HR.jsonl")
+    conda: "transformers"
+    script:
+        "scripts/run_inference.py"
+rule run_inference_SLO:
+    input:
+        checkpoint = "models/model_{instances}_{steps}_{serial}/checkpoint-{steps}/",
+        datafiles = ["../data_SLO.jsonl"]
+    output:  temp("models/model_{instances}_{steps}_{serial}/checkpoint-{steps}_predictions_SLO.jsonl")
+    conda: "transformers"
+    script:
+        "scripts/run_inference.py"
+rule gather_models:
+#echo "gpu?"; read core; export CUDA_VISIBLE_DEVICES=$core; echo "batch?";  read batch; snakemake -j 2  --use-conda gather_models --batch gather_models="$batch"
+    input:
+        expand("models/model_{instances}_{steps}_{serial}/checkpoint-{steps}/",
+        instances=INSTANCES,
+        serial=model_serials,
+        steps = STEPS,
+        )+ expand("models/model_{instances}_{steps}_{serial}/checkpoint-{steps}/",
+        instances=[10442],
+        serial=[i for i in range(10)],
+        steps = [6540],)
+rule train_one:
+    input:
+        data = "../data_PS-HR.jsonl"
+    output: directory("models/model_{instances}_{steps}_{serial}/checkpoint-{steps}/")
+    conda:
+        "transformers"
+    script:
+        "scripts/train_model.py"
