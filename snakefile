@@ -28,6 +28,12 @@ rule gather_textgrids:
         words_20_PS_HR = "data/input/PS_Mirna/stress_words_wav2vec2_20_epoch.jsonl",
         words_10_SLO = "data/input/SLO/stress_words_wav2vec2_10_epoch.jsonl",
         words_20_SLO = "data/input/SLO/stress_words_wav2vec2_20_epoch.jsonl",
+        png_10_MP = "data/input/MP/CM_10_epoch.png",
+        png_20_MP = "data/input/MP/CM_20_epoch.png",
+        png_10_PS_HR = "data/input/PS_Mirna/CM_10_epoch.png",
+        png_20_PS_HR = "data/input/PS_Mirna/CM_20_epoch.png",
+        png_10_SLO = "data/input/SLO/CM_10_epoch.png",
+        png_20_SLO = "data/input/SLO/CM_20_epoch.png",
     output:
         log_SLO = "data/SLO_test_textgrids_errors.log",
         log_MP = "data/MP_test_textgrids_errors.log",
@@ -53,13 +59,13 @@ rule gather_textgrids:
         cp {input.tgs_PS_HR} parlastress/prim_stress/PS_Mirna/stress_wav2vecbert2/
         cp {output.log_PS_HR} parlastress/prim_stress/PS_Mirna/stress_wav2vecbert2.log
 
-        cp {input.words_10_MP} {input.words_20_MP} parlastress/prim_stress/MP
-        cp {input.words_10_PS_HR} {input.words_20_PS_HR} parlastress/prim_stress/PS_Mirna
-        cp {input.words_10_SLO} {input.words_20_SLO} parlastress/prim_stress/SLO
+        cp {input.words_10_MP} {input.words_20_MP} {input.png_10_MP} {input.png_20_MP} parlastress/prim_stress/MP
+        cp {input.words_10_PS_HR} {input.words_20_PS_HR} {input.png_10_PS_HR} {input.png_20_PS_HR} parlastress/prim_stress/PS_Mirna
+        cp {input.words_10_SLO} {input.words_20_SLO} {input.png_10_SLO} {input.png_20_SLO} parlastress/prim_stress/SLO
 
         cd parlastress
         git add prim_stress/*
-        git commit -m "Add word files"
+        git commit -m "Add CM plots"
         git push
         cd ..
         rm -rf parlastress
@@ -78,7 +84,11 @@ rule generate_jsons_for_nikola_PS:
         }.get(wildcards.epoch)
     output: "data/input/{test}/stress_words_wav2vec2_{epoch}_epoch.jsonl"
     script: "scripts/generate_jsons_for_nikola.py"
-
+rule plot_CM:
+    conda: "transformers"
+    input: "data/input/{test}/stress_words_wav2vec2_{epoch}_epoch.jsonl"
+    output: "data/input/{test}/CM_{epoch}_epoch.png"
+    script: "scripts/confusion_matrices.py"
 
 rule generate_tg_output_PS:
     input:
@@ -88,7 +98,7 @@ rule generate_tg_output_PS:
     output:
         wav = "data/PS-HR_test_textgrids/{file}.wav",
         tg = "data/PS-HR_test_textgrids/{file}.TextGrid",
-        error_report = temp("data/PS-HR_test_textgrids/{file}.errors_found")
+        error_report = "data/PS-HR_test_textgrids/{file}.errors_found",
     params:
         models=TG_checkpoints,
         model_labels=TG_labels

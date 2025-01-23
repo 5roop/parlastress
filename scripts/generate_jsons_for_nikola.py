@@ -9,9 +9,9 @@ except NameError:
         "data/input/SLO/SLO_encoding_stress.jsonl",
     ]
     predictions = (
-        "model_primstress_1e-5_20_1/checkpoint-3270_postprocessedpredictions.jsonl"
+        "model_primstress_1e-5_20_1/checkpoint-6540_postprocessedpredictions.jsonl"
     )
-    output = "10epoch.jsonl"
+    output = "brisi.jsonl"
 
 import polars as pl
 import pandas as pd
@@ -46,26 +46,29 @@ for row in tqdm(preds.iter_rows(named=True), total=preds.shape[0]):
     word = [
         i for i in multisyllabic_words if overlaps(true, [i["time_s"], i["time_e"]])
     ][0]
-    pred_idx, true_idx = None, None
-    for candidate in word["stress"] + word["unstress"]:
+    pred_char_idx, true_char_idx = None, None
+    candidates = word["stress"] + word["unstress"]
+    candidates = sorted(candidates, key=lambda i: float(i["time_s"]))
+    for i, candidate in enumerate(candidates):
         if overlaps(true, [candidate["time_s"], candidate["time_e"]]):
-            true_idx = candidate["char_idx"]
-    assert true_idx is not None, "Could not find true index!"
+            true_char_idx = candidate["char_idx"]
+    assert true_char_idx is not None, "Could not find true index!"
     try:
         pred = [round(i + time_s, 2) for i in row["events_pred_pp"][0]]
-        for candidate in word["stress"] + word["unstress"]:
+        for i, candidate in enumerate(candidates):
             if overlaps(pred, [candidate["time_s"], candidate["time_e"]]):
-                pred_idx = candidate["char_idx"]
-        assert pred_idx is not None, "Could not find predicted index!"
+                pred_char_idx = candidate["char_idx"]
+        assert pred_char_idx is not None, "Could not find predicted index!"
     except IndexError:
-        pred_idx = None
+        pred_char_idx = None
     results.append(
         {
             "id": jdatasubset[0]["id"],
             "file_name": jdatasubset[0]["audio_wav"],
             "word": word["word"],
-            "true_char_idx": true_idx,
-            "pred_char_idx": pred_idx,
+            "true_char_idx": true_char_idx,
+            "pred_char_idx": pred_char_idx,
+            "nuclei": [i["char_idx"] for i in candidates],
         }
     )
 
