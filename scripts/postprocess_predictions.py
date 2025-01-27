@@ -3,27 +3,32 @@ try:
     outfile = snakemake.output[0]
     datafiles = snakemake.input.datafiles
 except NameError:
-    infile = "models/model_2400_0/checkpoint-150_predictions.jsonl"
-    outfile = "models/model_2400_0_checkpoint-150_postprocessedpredictions.jsonl"
-    datafiles = ["../data_MP.jsonl", "../data_PS-HR.jsonl", "../data_SLO.jsonl"]
+    infile = "model_primstress_8e-6_20_4/checkpoint-899_predictions.jsonl"
+    outfile = "model_primstress_8e-6_20_4/checkpoint-899_postprocessedpredictions.jsonl"
+    datafiles = [
+        "data_MP.jsonl",
+        "data_PS-HR.jsonl",
+        "data_SLO.jsonl",
+        "data_PS-RS.jsonl",
+    ]
 
 import polars as pl
 
-pl.Config(set_fmt_str_lengths=None)
+pl.Config(set_fmt_str_lengths=None, set_tbl_cols=None)
 import numpy as np
 
 df = pl.concat(
     [
-        pl.read_ndjson(i).select(
+        pl.read_ndjson(i, ignore_errors=True, infer_schema_length=None).select(
             """segment_name
-                               stress unstress""".split()
+                stress unstress""".split()
         )
         for i in datafiles
     ],
     how="vertical_relaxed",
 )
 
-preds = pl.read_ndjson(infile, ignore_errors=True)
+preds = pl.read_ndjson(infile, ignore_errors=True, infer_schema_length=None)
 
 
 # Fix dual stress predictions: take longest:
@@ -87,8 +92,6 @@ def fix_incorrect(row):
         return None
 
 
-
-
 preds = preds.with_columns(
     pl.struct(
         """events_pred_pp
@@ -98,7 +101,8 @@ preds = preds.with_columns(
     .map_elements(fix_incorrect)
     .alias("events_pred_pp")
 ).drop_nulls(subset="events_pred_pp")
-
+assert preds.shape[0] != 0, "Got no output to write!"
 preds.write_ndjson(outfile)
+
 
 2 + 2

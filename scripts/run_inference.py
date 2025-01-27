@@ -26,7 +26,7 @@ device = torch.device("cuda")
 df = (
     pl.concat(
         [
-            pl.read_ndjson(i).select(
+            pl.read_ndjson(i, ignore_errors=True, infer_schema_length=None).select(
                 """audio label time_s
                 time_e split_speaker
                 stress segment_name provenance""".split()

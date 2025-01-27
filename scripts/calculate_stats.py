@@ -4,10 +4,10 @@ try:
     modes = snakemake.params.modes
     provenances = snakemake.params.provenances
 except NameError:
-    infile = "model_primstress_3e-5_20_1/checkpoint-6540_postprocessedpredictions.jsonl"
+    infile = "models/model_1000_300_1/checkpoint-300_postprocessedpredictions.jsonl"
     outfile = "brisi.jsonl"
     modes = ["raw", "pp"]
-    provenances = ["PS-HR", "MP", "SLO"]
+    provenances = ["PS-HR", "MP", "SLO", "PS-RS"]
 
 
 import polars as pl
@@ -17,7 +17,7 @@ from sklearn.metrics import confusion_matrix
 from numpy import nan
 import json
 
-df = pl.read_ndjson(infile)
+df = pl.read_ndjson(infile, ignore_errors=True, infer_schema_length=None)
 
 
 def eval_events(row):
@@ -49,7 +49,9 @@ def eval_frames(row):
 results = []
 for mode in modes:
     for provenance in provenances:
-        df = pl.read_ndjson(infile).filter(pl.col("provenance").eq(provenance))
+        df = pl.read_ndjson(
+            infile, ignore_errors=True, infer_schema_length=None
+        ).filter(pl.col("provenance").eq(provenance))
         event_pred_col = "events_pred_pp" if mode == "pp" else "events_pred"
         df = df.with_columns(
             pl.struct(f"events_true {event_pred_col}".split())
@@ -93,7 +95,7 @@ for mode in modes:
             "event_precision": ep,
             "event_recall": er,
             "event_F1": event_F1,
-            "event_acc": TP / (TP + FP),
+            "event_acc": ep,  # TP / (TP + FP),
             "TP": TP,
             "FN": FN,
             "FP": FP,

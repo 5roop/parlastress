@@ -31,8 +31,12 @@ for model, tier_name in zip(models, model_labels):
     log += f"Log for {model}\n"
     f = model + "_postprocessedpredictions.jsonl"
     target_file = Path(inwav).with_suffix("").name
-    df = pl.read_ndjson(f).filter(pl.col("audio").str.contains(target_file))
-    for mode, target_column in zip(["raw", "postprocessed"], ["events_pred", "events_pred_pp"]):
+    df = pl.read_ndjson(f, ignore_errors=True, infer_schema_length=None).filter(
+        pl.col("audio").str.contains(target_file)
+    )
+    for mode, target_column in zip(
+        ["raw", "postprocessed"], ["events_pred", "events_pred_pp"]
+    ):
         inferred_stresses = []
         for row in df.iter_rows(named=True):
             offset = float(row["time_s"])
