@@ -64,7 +64,7 @@ plt.gcf().savefig(output)
 
 dataset_renamer = {
     "PS-HR": "ParlaStress-HR",
-    "PS-RS": "ParlaStress-RS",
+    "PS-RS": "ParlaStress-SR",
     "MP": "MićiPrinc-CKM",
     "SLO": "Artur-SL",
 }

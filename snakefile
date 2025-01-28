@@ -75,12 +75,12 @@ rule gather_textgrids:
         cp {input.words_10_SLO} {input.words_20_SLO} parlastress/prim_stress/SLO
         cp {input.words_10_MP} {input.words_20_MP} parlastress/prim_stress/MP
         cp {input.pdf_10} {input.pdf_20} {input.pdf_average} {input.pdf_learning_curve} parlastress/prim_stress/
-        # cd parlastress
-        # git add prim_stress/*
-        # git commit -m "Minor edits to learning_curves.pdf"
-        # git push
-        # cd ..
-        # rm -rf parlastress
+        cd parlastress
+        git add prim_stress/*
+        git commit -m "Minor edits to learning_curves.pdf and confusion matrices"
+        git push
+        cd ..
+        rm -rf parlastress
         """
 rule get_learning_curve_plot:
     output: "paper_images/learning_curves.pdf"

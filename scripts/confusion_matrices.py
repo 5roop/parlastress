@@ -50,13 +50,13 @@ provenances = sorted(
     provenances,
     key=lambda s: {
         "ParlaStress-HR": 0,
-        "ParlaStress-RS": 1,
+        "ParlaStress-SR": 1,
         "MićiPrinc-CKM": 2,
         "Artur-SL": 3,
     }.get(s, 55),
 )
 
-MAX_SYLLABLE = 4
+MAX_SYLLABLE = 5
 num_rows = len(provenances)
 fig, axes = plt.subplots(ncols=num_rows, figsize=(10, 4))
 for provenance, ax in zip(provenances, axes):
@@ -71,15 +71,15 @@ for provenance, ax in zip(provenances, axes):
     ).sum() / subset_for_acc.shape[0]
     y_true = subset_for_cm["true_syl_idx"] + 1
     y_pred = subset_for_cm["pred_syl_idx"] + 1
-    cm = confusion_matrix(y_true, y_pred)
+    cm = confusion_matrix(y_true, y_pred, labels=[i + 1 for i in range(MAX_SYLLABLE)])
     sns.heatmap(
         cm,
         annot=True,
         cmap="Oranges",
         cbar=False,
         fmt="d",
-        xticklabels=[f"{i}." for i in range(1, MAX_SYLLABLE + 1)],
-        yticklabels=[f"{i}." for i in range(1, MAX_SYLLABLE + 1)],
+        xticklabels=[f"{i}" for i in range(1, MAX_SYLLABLE + 1)],
+        yticklabels=[f"{i}" for i in range(1, MAX_SYLLABLE + 1)],
         ax=ax,
     )
     ax.set_xlabel("Predicted stressed syllable")
