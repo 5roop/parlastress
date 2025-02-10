@@ -28,7 +28,7 @@ def find_syllable_pred(row):
 
 dataset_renamer = {
     "PS-HR": "ParlaStress-HR",
-    "PS-RS": "ParlaStress-RS",
+    "PS-RS": "ParlaStress-SR",
     "MP": "MićiPrinc-CKM",
     "SLO": "Artur-SL",
 }
@@ -58,19 +58,15 @@ provenances = sorted(
 
 MAX_SYLLABLE = 5
 num_rows = len(provenances)
-fig, axes = plt.subplots(ncols=num_rows, figsize=(10, 4))
+D = 1
+fig, axes = plt.subplots(ncols=num_rows, figsize=(10 * D, 3 * D))
 for provenance, ax in zip(provenances, axes):
-    subset_for_cm = df.filter(
-        pl.col("provenance").eq(provenance)
-        & pl.col("true_syl_idx").lt(MAX_SYLLABLE)
-        & pl.col("pred_syl_idx").lt(MAX_SYLLABLE)
-    )
-    subset_for_acc = df.filter(pl.col("provenance").eq(provenance))
+    subset = df.filter(pl.col("provenance").eq(provenance))
     accuracy = (
-        subset_for_acc["true_char_idx"] == subset_for_acc["pred_char_idx"]
-    ).sum() / subset_for_acc.shape[0]
-    y_true = subset_for_cm["true_syl_idx"] + 1
-    y_pred = subset_for_cm["pred_syl_idx"] + 1
+        subset["true_char_idx"] == subset["pred_char_idx"]
+    ).sum() / subset.shape[0]
+    y_true = subset["true_syl_idx"] + 1
+    y_pred = subset["pred_syl_idx"] + 1
     cm = confusion_matrix(y_true, y_pred, labels=[i + 1 for i in range(MAX_SYLLABLE)])
     sns.heatmap(
         cm,
@@ -82,10 +78,13 @@ for provenance, ax in zip(provenances, axes):
         yticklabels=[f"{i}" for i in range(1, MAX_SYLLABLE + 1)],
         ax=ax,
     )
-    ax.set_xlabel("Predicted stressed syllable")
-    ax.set_ylabel("True stressed syllable")
+    ax.set_xlabel("Predicted Stressed Syllable")
+    ax.set_ylabel("True Stressed Syllable")
     ax.set_aspect("equal")
-    ax.set_title(provenance + f"\nAccuracy: {100 * accuracy:0.1f}%")
+    ax.set_title(
+        provenance
+        #  + f"\nAccuracy: {100 * accuracy:0.1f}%"
+    )
 plt.tight_layout()
 # fig.suptitle(str(Path(indata).with_suffix("")))
 plt.savefig(out)
