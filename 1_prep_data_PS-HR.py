@@ -39,19 +39,16 @@ def f(row):
     return frames.tolist()
 
 
-df = (
-    df.with_columns(
-        pl.struct(["time_s", "time_e", "stress"]).map_elements(f).alias("label"),
-        pl.col("audio_wav").alias("audio"),
+df = df.with_columns(
+    pl.struct(["time_s", "time_e", "stress"]).map_elements(f).alias("label"),
+    pl.col("audio_wav").alias("audio"),
+).with_columns(
+    pl.struct(["audio", "time_s", "time_e"])
+    .map_elements(
+        lambda row: f"{segment_path / str(Path(row['audio']).with_suffix('').name)}_{row['time_s']:0.2f}_{row['time_e']:0.2f}.wav"
     )
-    .with_columns(
-        pl.struct(["audio", "time_s", "time_e"])
-        .map_elements(
-            lambda row: f"{segment_path / str(Path(row['audio']).with_suffix('').name)}_{row['time_s']:0.2f}_{row['time_e']:0.2f}.wav"
-        )
-        .alias("segment_name"),
-        pl.lit("PS-HR").alias("provenance"),
-    )
+    .alias("segment_name"),
+    pl.lit("PS-HR").alias("provenance"),
 )
 from tqdm import tqdm
 

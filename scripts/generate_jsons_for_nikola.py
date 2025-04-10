@@ -9,10 +9,8 @@ except NameError:
         "data/input/MP/MP_encoding_stress.jsonl",
         "data/input/SLO/SLO_encoding_stress.jsonl",
     ]
-    predictions = (
-        "model_primstress_1e-5_20_1/checkpoint-6540_postprocessedpredictions.jsonl"
-    )
-    output = "brisi.jsonl"
+    predictions = "model_primstress_1e-5_20_1/checkpoint-6540_predictions.jsonl"
+    output = "model_primstress_1e-5_20_1/checkpoint-6540_words.jsonl"
 
 import polars as pl
 import pandas as pd
@@ -59,13 +57,15 @@ for row in tqdm(preds.iter_rows(named=True), total=preds.shape[0]):
             true_char_idx = candidate["char_idx"]
     assert true_char_idx is not None, "Could not find true index!"
     try:
-        pred = [round(i + time_s, 2) for i in row["events_pred_pp"][0]]
+        pred = [round(i + time_s, 2) for i in row["events_pred"][0]]
         for i, candidate in enumerate(candidates):
             if overlaps(pred, [candidate["time_s"], candidate["time_e"]]):
                 pred_char_idx = candidate["char_idx"]
         assert pred_char_idx is not None, "Could not find predicted index!"
     except IndexError:
         pred_char_idx = None
+    except AssertionError:
+        pass
     results.append(
         {
             "id": jdatasubset[0]["id"],
@@ -78,6 +78,9 @@ for row in tqdm(preds.iter_rows(named=True), total=preds.shape[0]):
         }
     )
 
-pl.DataFrame(results).write_ndjson(output)
-
+df = pl.DataFrame(results)
+df.write_ndjson(output)
+for provenance in df["provenance"].unique():
+    new_output = output.replace("words", f"words_{provenance}")
+    df.filter(pl.col("provenance").eq(provenance)).write_ndjson(new_output)
 print(pl.DataFrame(results).shape)

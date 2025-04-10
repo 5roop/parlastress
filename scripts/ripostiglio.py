@@ -12,8 +12,8 @@ def events_to_frames(
     import numpy as np
 
     duration = segment_end - segment_start
-    stress_start_i = int((stress_start - segment_start) * FRAME_RATE)
-    stress_end_i = int((stress_end - segment_start) * FRAME_RATE)
+    stress_start_i = int(round((stress_start - segment_start) * FRAME_RATE, 0))
+    stress_end_i = int(round((stress_end - segment_start) * FRAME_RATE, 0))
     num_elements = int(FRAME_RATE * duration)
     if not twodimensional:
         labels = np.zeros(num_elements, dtype=np.int8)
@@ -44,7 +44,7 @@ def frames_to_events(frames: list) -> list[tuple]:
             pass
         else:
             results.append(
-                (round(ndf.loc[si, "time_s"], 3), round(ndf.loc[ei - 1, "time_s"], 3))
+                (round(ndf.loc[si, "time_s"], 3), round(ndf.loc[ei, "time_s"], 3))
             )
     return results
 

@@ -10,17 +10,34 @@ from transformers import AutoFeatureExtractor, Wav2Vec2BertForAudioFrameClassifi
 from itertools import product
 import torch
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "5"
+os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 device = torch.device("cuda")
 
+dfs = [pl.read_ndjson(i) for i in Path(".").glob("data_*jsonl")]
+columns = dfs[0].columns
+for i in dfs:
+    columns = [j for j in columns if j in i.columns]
+
 df = (
-    pl.read_ndjson("data.jsonl")
+    pl.concat(
+        [
+            pl.read_ndjson(i)
+            .select(columns)
+            .with_columns(
+                provenance=pl.lit(i.name.replace("data_", "").replace(".jsonl", ""))
+            )
+            for i in Path(".").glob("data_*jsonl")
+        ],
+        how="vertical_relaxed",
+    )
     .filter(pl.col("split_speaker").eq("test"))
-    .with_columns(pl.col("segment_name").alias("audio"))
+    .with_columns(
+        pl.col("segment_name").alias("audio"),
+    )
 )
 # df = df.select(["audio", "label"])
 
-model_name = "model_primstress_3e-5_20_1/checkpoint-6540"
+model_name = "model_primstress_1e-5_20_1/checkpoint-6540"
 feature_extractor = AutoFeatureExtractor.from_pretrained(
     pretrained_model_name_or_path=model_name
 )
@@ -89,7 +106,7 @@ df = (
     .alias("events_true"),
 )
 
-df.select("audio time_s time_e stress y_pred y_true segment_name  events_true events_pred".split()).write_ndjson(
-    model_name + "_predictions.jsonl"
-)
+df.select(
+    "audio time_s time_e stress y_pred y_true segment_name  events_true events_pred provenance".split()
+).write_ndjson(model_name + "_predictions.jsonl")
 2 + 2

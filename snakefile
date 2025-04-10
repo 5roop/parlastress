@@ -38,7 +38,6 @@ rule gather_textgrids:
         pdf_20 = "paper_images/CM_20_epoch.pdf",
         pdf_average = "paper_images/CM_1200X1000.pdf",
         pdf_learning_curve = "paper_images/learning_curves.pdf"
-
     output:
         log_SLO = "data/SLO_test_textgrids_errors.log",
         log_MP = "data/MP_test_textgrids_errors.log",
@@ -50,37 +49,37 @@ rule gather_textgrids:
         cat {input.logs_MP} > {output.log_MP}
         cat {input.logs_PS_HR} > {output.log_PS_HR}
         cat {input.logs_PS_RS} > {output.log_PS_RS}
-        rm -rf parlastress
-        git clone https://github.com/clarinsi/parlastress.git
-        rm -rf parlastress/prim_stress/*/stress_wav2vec*
-        mkdir -p parlastress/prim_stress/SLO/stress_wav2vecbert2/
-        mkdir -p parlastress/prim_stress/MP/stress_wav2vecbert2/
-        mkdir -p parlastress/prim_stress/PS_Mirna/stress_wav2vecbert2/
-        mkdir -p parlastress/prim_stress/RS_Mirna/stress_wav2vecbert2/
+        # rm -rf parlastress
+        # git clone https://github.com/clarinsi/parlastress.git
+        # rm -rf parlastress/prim_stress/*/stress_wav2vec*
+        # mkdir -p parlastress/prim_stress/SLO/stress_wav2vecbert2/
+        # mkdir -p parlastress/prim_stress/MP/stress_wav2vecbert2/
+        # mkdir -p parlastress/prim_stress/PS_Mirna/stress_wav2vecbert2/
+        # mkdir -p parlastress/prim_stress/RS_Mirna/stress_wav2vecbert2/
 
-        cp {input.tgs_SLO} parlastress/prim_stress/SLO/stress_wav2vecbert2/
-        cp {output.log_SLO} parlastress/prim_stress/SLO/stress_wav2vecbert2.log
+        # cp {input.tgs_SLO} parlastress/prim_stress/SLO/stress_wav2vecbert2/
+        # cp {output.log_SLO} parlastress/prim_stress/SLO/stress_wav2vecbert2.log
 
-        cp {input.tgs_MP} parlastress/prim_stress/MP/stress_wav2vecbert2/
-        cp {output.log_MP} parlastress/prim_stress/MP/stress_wav2vecbert2.log
+        # cp {input.tgs_MP} parlastress/prim_stress/MP/stress_wav2vecbert2/
+        # cp {output.log_MP} parlastress/prim_stress/MP/stress_wav2vecbert2.log
 
-        cp {input.tgs_PS_HR} parlastress/prim_stress/PS_Mirna/stress_wav2vecbert2/
-        cp {output.log_PS_HR} parlastress/prim_stress/PS_Mirna/stress_wav2vecbert2.log
+        # cp {input.tgs_PS_HR} parlastress/prim_stress/PS_Mirna/stress_wav2vecbert2/
+        # cp {output.log_PS_HR} parlastress/prim_stress/PS_Mirna/stress_wav2vecbert2.log
 
-        cp {input.tgs_PS_RS} parlastress/prim_stress/RS_Mirna/stress_wav2vecbert2/
-        cp {output.log_PS_RS} parlastress/prim_stress/RS_Mirna/stress_wav2vecbert2.log
+        # cp {input.tgs_PS_RS} parlastress/prim_stress/RS_Mirna/stress_wav2vecbert2/
+        # cp {output.log_PS_RS} parlastress/prim_stress/RS_Mirna/stress_wav2vecbert2.log
 
-        cp {input.words_10_RS} {input.words_20_RS} parlastress/prim_stress/RS_Mirna
-        cp {input.words_10_PS_HR} {input.words_20_PS_HR} parlastress/prim_stress/PS_Mirna
-        cp {input.words_10_SLO} {input.words_20_SLO} parlastress/prim_stress/SLO
-        cp {input.words_10_MP} {input.words_20_MP} parlastress/prim_stress/MP
-        cp {input.pdf_10} {input.pdf_20} {input.pdf_average} {input.pdf_learning_curve} parlastress/prim_stress/
-        cd parlastress
-        git add prim_stress/*
-        git commit -m "Minor edits to learning_curves.pdf and confusion matrices"
-        git push
-        cd ..
-        rm -rf parlastress
+        # cp {input.words_10_RS} {input.words_20_RS} parlastress/prim_stress/RS_Mirna
+        # cp {input.words_10_PS_HR} {input.words_20_PS_HR} parlastress/prim_stress/PS_Mirna
+        # cp {input.words_10_SLO} {input.words_20_SLO} parlastress/prim_stress/SLO
+        # cp {input.words_10_MP} {input.words_20_MP} parlastress/prim_stress/MP
+        # cp {input.pdf_10} {input.pdf_20} {input.pdf_average} {input.pdf_learning_curve} parlastress/prim_stress/
+        # cd parlastress
+        # git add prim_stress/*
+        # git commit -m "Minor edits to learning_curves.pdf and confusion matrices"
+        # git push
+        # cd ..
+        # rm -rf parlastress
         """
 rule get_learning_curve_plot:
     output: "paper_images/learning_curves.pdf"

@@ -15,7 +15,7 @@ device = torch.device("cuda")
 os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 
 df = (
-    pl.read_ndjson("data.jsonl")
+    pl.read_ndjson("data_PS-HR.jsonl")
     .filter(pl.col("split_speaker").eq("train"))
     .with_columns(pl.col("segment_name").alias("audio"))
 )
@@ -73,16 +73,19 @@ ds = ds.map(
 
 
 LRs = [
-    "3e-5",
+    # "3e-5",
     "1e-5",
-    "8e-6",
-    "5e-5",
+    # "8e-6",
+    # "5e-5",
 ]
 EPs = [
     "20",
     # "10",
 ]
-gases = [1, 4]
+gases = [
+    1,
+    # 4
+]
 
 for LR, EP, gas in product(LRs, EPs, gases):
     model = Wav2Vec2BertForAudioFrameClassification.from_pretrained(
@@ -102,7 +105,7 @@ for LR, EP, gas in product(LRs, EPs, gases):
         weight_decay=0.01,
         save_strategy="epoch",
         logging_steps=10,
-        # save_total_limit=2,
+        save_total_limit=1,
     )
     trainer = Trainer(
         model=model,
