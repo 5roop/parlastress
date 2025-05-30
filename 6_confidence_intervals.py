@@ -31,7 +31,7 @@ for s, t, l in zip(svmfiles, transfiles, labels):
     mean_t, (lo_t, hi_t) = evaluate_with_conf_int(
         t["pred_char_idx"], accuracy_score, t["true_char_idx"]
     )
-
+    print(t["pred_char_idx"])
     print(
         f"{l} & {mean_s * 100:2.1f} & [{lo_s * 100:2.1f},{hi_s * 100:0.1f}]  & {mean_t * 100:2.1f}& [{lo_t * 100:2.1f},{hi_t * 100:0.1f}] \\\\"
     )
